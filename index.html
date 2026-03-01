@@ -154,14 +154,13 @@
                 return;
             }
 
-            // Select random impostors
-            impostors = [];
-            while (impostors.length < impostorCount) {
-                const randomPlayer = Math.floor(Math.random() * totalPlayers);
-                if (!impostors.includes(randomPlayer)) {
-                    impostors.push(randomPlayer);
-                }
+            // Select random impostors using shuffle approach
+            const playerIndices = Array.from({length: totalPlayers}, (_, i) => i);
+            for (let i = playerIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [playerIndices[i], playerIndices[j]] = [playerIndices[j], playerIndices[i]];
             }
+            impostors = playerIndices.slice(0, impostorCount);
 
             // Select random word
             currentWord = secretWords[Math.floor(Math.random() * secretWords.length)];
@@ -179,10 +178,25 @@
             const isImpostor = impostors.includes(currentPlayerIndex);
             const identityContent = document.getElementById('identityContent');
             
+            // Clear existing content
+            identityContent.innerHTML = '';
+            
             if (isImpostor) {
-                identityContent.innerHTML = '<p class="impostor-warning">VOCÊ É O IMPOSTOR!</p><p>Tente descobrir qual é a palavra secreta sem se revelar!</p>';
+                const warningP = document.createElement('p');
+                warningP.className = 'impostor-warning';
+                warningP.textContent = 'VOCÊ É O IMPOSTOR!';
+                const instructionP = document.createElement('p');
+                instructionP.textContent = 'Tente descobrir qual é a palavra secreta sem se revelar!';
+                identityContent.appendChild(warningP);
+                identityContent.appendChild(instructionP);
             } else {
-                identityContent.innerHTML = `<p>A palavra secreta é:</p><div class="word-display">${currentWord}</div>`;
+                const labelP = document.createElement('p');
+                labelP.textContent = 'A palavra secreta é:';
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word-display';
+                wordDiv.textContent = currentWord;
+                identityContent.appendChild(labelP);
+                identityContent.appendChild(wordDiv);
             }
             
             showScreen('identityReveal');
